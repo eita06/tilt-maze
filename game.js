@@ -115,6 +115,33 @@ function hitHazard() {
   return false;
 }
 
+let restartBtn = document.getElementById("restartBtn");
+
+function restartGame() {
+  ball.x = 150;
+  ball.y = 200;
+  ball.vx = 0;
+  ball.vy = 0;
+  cleared = false;
+
+  document.getElementById("message").textContent = "";
+   restartBtn.style.display = "none";
+}
+
+restartBtn.addEventListener("click", restartGame);
+
+function restartGame() {
+  ball.x = 150;
+  ball.y = 200;
+  ball.vx = 0;
+  ball.vy = 0;
+  cleared = false;
+
+  startTime = Date.now();
+
+  document.getElementById("message").textContent = "";
+  restartBtn.style.display = "none";
+}
 
 
 // ------------------------------------------------------------
@@ -244,6 +271,17 @@ for (let i = 0; i < hazards.length; i++) {
     }
   }
 }
+
+if (cleared) {
+  document.getElementById("message").textContent = "CLEAR"; [4]
+  restartBtn.style.display = "block";
+}
+
+  if (!cleared) {
+    let now = Date.now();
+    let sec = (now - startTime) / 1000;
+    document.getElementById("timer").textContent = sec.toFixed(1);
+  }
 }
 
 
