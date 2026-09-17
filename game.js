@@ -59,6 +59,63 @@
 
 let ball = { x: 150, y: 200, vx: 0, vy: 0 };
 
+let goal = { x: 45, y: 330, r: 22,};
+let cleared = false;
+
+
+let startTime = Date.now();
+
+let walls = [
+    { x: BOARD_W/4, y: 170, w: 95, h: 16 },
+    { x: 60, y: 250, w: 240, h: 16 },
+    { x: 60, y: 170, w: 16, h: 90},
+    { x: 100, y: 210, w: 60, h: 16 },
+    { x: 160, y: 50, w: 20, h: 176 },
+    { x: 0, y: 285, w: 275, h: 15 },
+
+
+];
+
+function hitWall() {
+    for (let i = 0; i < walls.length; i++) {
+        let w = walls[i];
+        if (ball.x > w.x && ball.x < w.x + w.w &&
+            ball.y > w.y && ball.y < w.y + w.h) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+function resetBall() {
+  ball.x = 150;
+  ball.y = 200;
+  ball.vx = 0;
+  ball.vy = 0;
+}
+
+let hazards = [
+  { x: 220, y: 160, w: 40, h: 16, vx: 1.2, minX:170, maxX:BOARD_W},
+  { x: 220, y: 80, w: 40, h: 16, vx: 1.0, minX:170, maxX:BOARD_W},
+  {x:80, y:290, w: 20, h: 50, vy: 2.2, minY:290, maxY:BOARD_H},
+  {x:35, y:70, w: 100, h: 30},
+  {x:70, y:35, w: 30, h: 100},
+
+
+
+];
+
+function hitHazard() {
+  for (let i = 0; i < hazards.length; i++) {
+    let h = hazards[i];
+    if (ball.x > h.x && ball.x < h.x + h.w && ball.y > h.y && ball.y < h.y + h.h) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 
 // ------------------------------------------------------------
 //  STEP 2   描画する
@@ -77,31 +134,119 @@ function update() {
     ball.vx = ball.vx + tilt.x * 0.5;
     ball.vy = ball.vy + tilt.y * 0.5;
 
-    ball.x = ball.x + ball.vx;
-    ball.y = ball.y + ball.vy;
+ //   ball.x = ball.x + ball.vx;
+ //   ball.y = ball.y + ball.vy;
 
 if (ball.x < 0) {
     ball.x = 0;
-    ball.vx = -ball.vx;
+    ball.vx = -ball.vx * 0.9;
 }
 
 if (ball.x > BOARD_W) {
     ball.x = BOARD_W;
-    ball.vx = -ball.vx;
+    ball.vx = -ball.vx * 0.8;
 }
 
 if (ball.y < 0) {
     ball.y = 0;
-    ball.vy = -ball.vy
+    ball.vy = -ball.vy * 0.2;
 }
 
 if (ball.y >BOARD_H) {
     ball.y = BOARD_H;
-    ball.vy = -ball.vy
+    ball.vy = -ball.vy * 0.4;
 }
 
+ball.vx = ball.vx * 0.80;
+ball.vy = ball.vy * 1.00;
+
     drawBall(ball.x, ball.y);
+
+let dx = ball.x - goal.x;
+let dy = ball.y - goal.y;
+let dist = Math.sqrt(dx * dx + dy * dy);
+
+if (dist < goal.r) {
+    cleared = true
+    
 }
+if(cleared == true){
+    document.getElementById("message")
+    .textContent = "CLEAR"
+}
+    else {
+        let sec = (Date.now() - startTime) / 1000;
+        document.getElementById("timer").textContent = sec.toFixed(1);
+    }
+
+drawGoal(45, 330, 22)
+    
+for (let i = 0; i < walls.length; i++) {
+    drawWall(walls[i].x, walls[i].y, walls[i].w, walls[i].h);
+}
+
+let prevX = ball.x;
+ball.x = ball.x + ball.vx;
+if (hitWall()) {
+    ball.x = prevX;
+    ball.vx = -ball.vx * 0.5;
+}
+
+let prevY = ball.y;
+ball.y = ball.y + ball.vy;
+if (hitWall()) {
+    ball.y = prevY;
+    ball.vy = -ball.vy * 0.5;
+}
+
+
+for (let i = 0; i < hazards.length; i++) {
+  let h = hazards[i];
+
+if (h.vx) {
+    h.x += h.vx;
+    if (h.x < 0 || h.x + h.w > BOARD_W) {
+      h.vx = -h.vx;
+    }
+  }
+
+if (h.vy) {
+    h.y += h.vy;
+    if (h.y < 0 || h.y + h.h > BOARD_H) {
+      h.vy = -h.vy;
+    }
+  }
+}
+
+if (hitHazard()) {
+    resetBall();
+}
+
+for (let i = 0; i < hazards.length; i++) {
+    let h = hazards[i];
+  drawWall(hazards[i].x, hazards[i].y, hazards[i].w, hazards[i].h,);
+}
+
+for (let i = 0; i < hazards.length; i++) {
+  let h = hazards[i];
+
+  if (h.vx) {
+    h.x += h.vx;
+    if (h.x < h.minX || h.x + h.w > h.maxX) {
+      h.vx = -h.vx;
+    }
+  }
+
+  if (h.vy) {
+    h.y += h.vy;
+    if (h.y < h.minY || h.y + h.h > h.maxY) {
+      h.vy = -h.vy;
+    }
+  }
+}
+}
+
+
 
 
 // ------------------------------------------------------------
@@ -234,7 +379,6 @@ if (ball.y >BOARD_H) {
 
 
 
-
 // ============================================================
 //
 //  発展
@@ -247,3 +391,5 @@ if (ball.y >BOARD_H) {
 //    ・壁ごとに反発係数を変える
 //
 // ============================================================
+
+
